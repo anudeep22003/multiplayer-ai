@@ -11,7 +11,7 @@ import (
 )
 
 func main() {
-	if err := godotenv.Load(); err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if err := godotenv.Load(".env.local"); err != nil && !errors.Is(err, fs.ErrNotExist) {
 		log.Fatalf("load .env: %v", err)
 	}
 
@@ -21,4 +21,5 @@ func main() {
 	}
 
 	fmt.Printf("Hello from %s (%s)\n", config.AppName, config.Environment)
+
 }
