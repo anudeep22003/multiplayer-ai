@@ -1,1 +1,15 @@
+# Local environment files
 /.env
+/.env.local
+
+# Go build artifacts
+/bin/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test binaries and coverage output
+*.test
+*.out
