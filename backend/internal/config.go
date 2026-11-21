@@ -19,11 +19,16 @@ type Config struct {
 	WriteTimeout time.Duration `env:"WRITE_TIMEOUT" envDefault:"10s"`
 	IdleTimeout  time.Duration `env:"IDLE_TIMEOUT" envDefault:"60s"`
 
-	DatabaseURL string `env:"DATABASE_URL"`
+	DatabaseURL       string        `env:"DATABASE_URL,notEmpty"`
+	DBMaxConns        int32         `env:"DB_MAX_CONNS" envDefault:"25"`
+	DBMinConns        int32         `env:"DB_MIN_CONNS" envDefault:"2"`
+	DBMaxConnLifetime time.Duration `env:"DB_MAX_CONN_LIFETIME" envDefault:"1h"`
+	DBMaxConnIdleTime time.Duration `env:"DB_MAX_CONN_IDLE_TIME" envDefault:"30m"`
+	DBConnectTimeout  time.Duration `env:"DB_CONNECT_TIMEOUT" envDefault:"5s"`
 }
 
 // Load reads environment variables, applying defaults for unset values.
-// Invalid values return an error. DATABASE_URL is optional until needed.
+// Invalid or missing required values return an error.
 func Load() (Config, error) {
 	cfg, err := env.ParseAs[Config]()
 	if err != nil {
