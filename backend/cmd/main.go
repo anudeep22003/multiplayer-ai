@@ -24,14 +24,13 @@ func main() {
 	}
 
 	server := internal.NewServer(&config)
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	stop()
+
+	err = internal.Run(ctx, server)
 	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, server.Addr)
-	// if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-	// 	log.Fatalf("serve HTTP: %v", err)
-	// }
 
-	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-
-	if err := internal.Run(ctx, server); err != nil {
-		os.Exit(1)
+	if err != nil {
+		log.Fatal(err)
 	}
 }
