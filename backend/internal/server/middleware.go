@@ -1,6 +1,9 @@
 package server
 
-import "net/http"
+import (
+	"net/http"
+	"slices"
+)
 
 // Middleware wraps an http.Handler with cross-cutting request/response logic.
 type Middleware func(http.Handler) http.Handler
@@ -9,9 +12,9 @@ type Middleware func(http.Handler) http.Handler
 // Chain(m1, m2)(h) runs m1 first, then m2, and finally h.
 func Chain(middlewares ...Middleware) Middleware {
 	return func(next http.Handler) http.Handler {
-		for i := len(middlewares) - 1; i >= 0; i-- {
-			if middlewares[i] != nil {
-				next = middlewares[i](next)
+		for _, m := range slices.Backward(middlewares) {
+			if m != nil {
+				next = m(next)
 			}
 		}
 		return next
