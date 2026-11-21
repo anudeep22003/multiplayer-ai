@@ -1,4 +1,4 @@
-package internal
+package server
 
 import (
 	"context"
@@ -8,16 +8,20 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/anudeep22003/conman/internal"
 )
 
 const shutdownTimeout = 15 * time.Second
 
-// NewServer configures an HTTP server with the backend's routes and timeouts.
-func NewServer(cfg *Config) *http.Server {
+// New configures an HTTP server with the backend's routes, middlewares, and timeouts.
+func New(cfg *internal.Config, middlewares ...Middleware) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
+
+	handler := Chain(middlewares...)(mux)
 
 	return &http.Server{
 		// Addr optionally specifies the TCP address for the server to listen on,
@@ -25,7 +29,7 @@ func NewServer(cfg *Config) *http.Server {
 		// The service names are defined in RFC 6335 and assigned by IANA.
 		// See net.Dial for details of the address format.
 		Addr:    net.JoinHostPort(cfg.Host, strconv.Itoa(int(cfg.Port))),
-		Handler: mux, // handler to invoke, http.DefaultServeMux if nil
+		Handler: handler,
 
 		// ReadTimeout is the maximum duration for reading the entire
 		// request, including the body. A zero or negative value means
@@ -53,10 +57,10 @@ func NewServer(cfg *Config) *http.Server {
 }
 
 // Run serves HTTP and waits for a graceful shutdown when ctx is canceled.
-func Run(ctx context.Context, server *http.Server) error {
+func Run(ctx context.Context, srv *http.Server) error {
 	serveErrors := make(chan error, 1)
 	go func() {
-		serveErrors <- server.ListenAndServe()
+		serveErrors <- srv.ListenAndServe()
 	}()
 
 	var serveErr error
@@ -66,7 +70,7 @@ func Run(ctx context.Context, server *http.Server) error {
 		// The signal context is already canceled. Give active requests their own deadline.
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 		defer cancel()
-		if err := server.Shutdown(shutdownCtx); err != nil {
+		if err := srv.Shutdown(shutdownCtx); err != nil {
 			return fmt.Errorf("shutdown HTTP server: %w", err)
 		}
 		serveErr = <-serveErrors

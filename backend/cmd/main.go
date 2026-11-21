@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/conman/internal/server"
 	"github.com/joho/godotenv"
 )
 
@@ -23,14 +24,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server := internal.NewServer(&config)
+	srv := server.New(&config, server.PassThrough)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	stop()
+	defer stop()
 
-	err = internal.Run(ctx, server)
-	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, server.Addr)
-
-	if err != nil {
+	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, srv.Addr)
+	if err := server.Run(ctx, srv); err != nil {
 		log.Fatal(err)
 	}
 }
