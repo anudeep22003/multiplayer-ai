@@ -1,10 +1,13 @@
 package main
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"log"
-	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/anudeep22003/conman/internal"
 	"github.com/joho/godotenv"
@@ -22,7 +25,13 @@ func main() {
 
 	server := internal.NewServer(&config)
 	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, server.Addr)
-	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
-		log.Fatalf("serve HTTP: %v", err)
+	// if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+	// 	log.Fatalf("serve HTTP: %v", err)
+	// }
+
+	ctx, _ := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+
+	if err := internal.Run(ctx, server); err != nil {
+		os.Exit(1)
 	}
 }

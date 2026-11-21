@@ -1,10 +1,15 @@
 package internal
 
 import (
-	"encoding/json"
+	"context"
 	"net"
 	"net/http"
 	"strconv"
+	"time"
+)
+
+const (
+	ShutdownTimeout = time.Second * 15
 )
 
 // NewServer configures an HTTP server with the backend's routes and timeouts.
@@ -13,20 +18,20 @@ func NewServer(cfg *Config) *http.Server {
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 	})
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		response := map[string]string{"Hello": "World"}
-
-		bytes, err := json.Marshal(response)
-		if err != nil {
-			http.Error(w, "json parsing error", http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("content-type", "application/json")
-		w.WriteHeader(http.StatusOK)
-
-		_, _ = w.Write(bytes)
-
-	})
+	// mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	// 	response := map[string]string{"Hello": "World"}
+	//
+	// 	bytes, err := json.Marshal(response)
+	// 	if err != nil {
+	// 		http.Error(w, "json parsing error", http.StatusInternalServerError)
+	// 		return
+	// 	}
+	// 	w.Header().Set("content-type", "application/json")
+	// 	w.WriteHeader(http.StatusOK)
+	//
+	// 	_, _ = w.Write(bytes)
+	//
+	// })
 
 	return &http.Server{
 		// Addr optionally specifies the TCP address for the server to listen on,
@@ -59,4 +64,25 @@ func NewServer(cfg *Config) *http.Server {
 		// is zero or negative, there is no timeout.
 		IdleTimeout: cfg.IdleTimeout,
 	}
+}
+
+func Run(ctx context.Context, srv *http.Server) error {
+	errChan := make(chan error, 1)
+
+	go func() { errChan <- srv.ListenAndServe() }()
+
+	select {
+	case err := <-errChan:
+		if err != http.ErrServerClosed {
+			return err
+		}
+		// fall through to graceful shutdown
+	case <-ctx.Done():
+		// fall through to grceful shutdown
+	}
+
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), ShutdownTimeout)
+	defer cancel()
+
+	return srv.Shutdown(shutdownCtx)
 }
