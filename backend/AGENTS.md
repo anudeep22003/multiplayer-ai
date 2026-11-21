@@ -6,10 +6,13 @@
 
 ## Current Layout
 
-- `cmd/main.go` — Application entrypoint: loads optional `.env.local`, parses `Config`, wires OS signal handling (`SIGINT`, `SIGTERM`), and runs the HTTP server.
+- `cmd/main.go` — Application entrypoint: loads optional `.env.local`, parses `Config`, initializes the PostgreSQL connection pool, wires OS signal handling (`SIGINT`, `SIGTERM`), and runs the HTTP server.
 - `internal/config.go` — Typed environment configuration (`Config`) parsed via `github.com/caarlos0/env/v11`.
-- `internal/server/server.go` — `net/http` server construction (`server.New`), routing (`GET /healthz`), timeouts, and graceful shutdown (`server.Run`).
+- `internal/postgres/postgres.go` — PostgreSQL connection pool construction (`postgres.NewPool` via `pgxpool`) with bounded startup `Ping`.
+- `internal/server/server.go` — `net/http` server construction (`server.New`), timeouts, and graceful shutdown (`server.Run`).
+- `internal/server/handler.go` — `Handler` struct, consumer `DB` interface, and root health/readiness endpoints (`GET /healthz`, `GET /readyz`).
 - `internal/server/middleware.go` — `Middleware` type, ordered middleware composition (`Chain`), and `PassThrough` middleware.
+- `compose.yaml` — Local PostgreSQL (`postgres:17-alpine`) service for development and integration tests.
 - `.env.sample` — Canonical template of supported environment variables. `.env` and `.env.local` are gitignored.
 
 As the codebase grows, organize new packages under `internal/` around clear responsibilities or domains rather than introducing premature layers or generic `util` packages.
@@ -19,6 +22,9 @@ As the codebase grows, organize new packages under `internal/` around clear resp
 Run all commands from the backend root (`/Users/anudeep/@anudeep/everything/conman/backend`) so `.env.local` and module paths resolve properly:
 
 ```sh
+# Start local PostgreSQL container
+docker compose up -d --wait
+
 # Run locally
 go run ./cmd
 

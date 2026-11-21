@@ -15,11 +15,10 @@ import (
 const shutdownTimeout = 15 * time.Second
 
 // New configures an HTTP server with the backend's routes, middlewares, and timeouts.
-func New(cfg *internal.Config, middlewares ...Middleware) *http.Server {
+func New(cfg *internal.Config, db DB, middlewares ...Middleware) *http.Server {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
-		w.WriteHeader(http.StatusOK)
-	})
+	h := NewHandler(db)
+	h.RegisterRoutes(mux)
 
 	handler := Chain(middlewares...)(mux)
 

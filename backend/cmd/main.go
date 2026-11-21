@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/conman/internal/postgres"
 	"github.com/anudeep22003/conman/internal/server"
 	"github.com/joho/godotenv"
 )
@@ -24,9 +25,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	srv := server.New(&config, server.PassThrough)
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
+
+	pool, err := postgres.NewPool(ctx, &config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer pool.Close()
+
+	srv := server.New(&config, pool, server.PassThrough)
 
 	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, srv.Addr)
 	if err := server.Run(ctx, srv); err != nil {
