@@ -2,9 +2,9 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io/fs"
 	"log"
+	"net/http"
 
 	"github.com/anudeep22003/conman/internal"
 	"github.com/joho/godotenv"
@@ -12,7 +12,7 @@ import (
 
 func main() {
 	if err := godotenv.Load(".env.local"); err != nil && !errors.Is(err, fs.ErrNotExist) {
-		log.Fatalf("load .env: %v", err)
+		log.Fatalf("load .env.local: %v", err)
 	}
 
 	config, err := internal.Load()
@@ -20,6 +20,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("Hello from %s (%s)\n", config.AppName, config.Environment)
-
+	server := internal.NewServer(&config)
+	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, server.Addr)
+	if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Fatalf("serve HTTP: %v", err)
+	}
 }
