@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"encoding/json"
 	"net"
 	"net/http"
 	"strconv"
@@ -11,6 +12,20 @@ func NewServer(cfg *Config) *http.Server {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
+	})
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		response := map[string]string{"Hello": "World"}
+
+		bytes, err := json.Marshal(response)
+		if err != nil {
+			http.Error(w, "json parsing error", http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("content-type", "application/json")
+		w.WriteHeader(http.StatusOK)
+
+		_, _ = w.Write(bytes)
+
 	})
 
 	return &http.Server{
