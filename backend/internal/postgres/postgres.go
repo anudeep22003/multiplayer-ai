@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/anudeep22003/conman/internal"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -15,6 +16,7 @@ func NewPool(ctx context.Context, cfg *internal.Config) (*pgxpool.Pool, error) {
 		return nil, fmt.Errorf("parse postgres config: %w", err)
 	}
 
+	poolCfg.ConnConfig.DefaultQueryExecMode = pgx.QueryExecModeSimpleProtocol
 	poolCfg.MaxConns = cfg.DBMaxConns
 	poolCfg.MinConns = cfg.DBMinConns
 	poolCfg.MaxConnLifetime = cfg.DBMaxConnLifetime

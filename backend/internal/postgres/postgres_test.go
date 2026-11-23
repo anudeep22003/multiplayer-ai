@@ -35,7 +35,7 @@ func TestNewPool_Integration(t *testing.T) {
 	cfg := internal.Config{
 		DatabaseURL:       dsn,
 		DBMaxConns:        4,
-		DBMinConns:        1,
+		DBMinConns:        0,
 		DBMaxConnLifetime: 5 * time.Minute,
 		DBMaxConnIdleTime: time.Minute,
 		DBConnectTimeout:  5 * time.Second,
