@@ -28,7 +28,9 @@ function requireUrlEnv(
 }
 
 export const VITE_API_URL = requireUrlEnv("VITE_API_URL", ["http:", "https:"]);
-export const VITE_WS_URL = requireUrlEnv("VITE_WS_URL", ["ws:", "wss:"]);
+export const VITE_WS_URL = import.meta.env.VITE_WS_URL
+  ? requireUrlEnv("VITE_WS_URL", ["ws:", "wss:"])
+  : undefined;
 
 export const env = {
   VITE_API_URL,

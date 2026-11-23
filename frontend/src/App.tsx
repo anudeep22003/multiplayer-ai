@@ -1,126 +1,120 @@
-import { ModeToggle } from "@/components/mode-toggle";
-import { useTheme } from "@/components/theme-provider";
+import { isAxiosError } from "axios";
+import { type FormEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { env } from "@/lib/env";
-
-interface TokenSwatch {
-  readonly label: string;
-  readonly token: string;
-  readonly surfaceClassName: string;
-}
-
-const TOKEN_SWATCHES: readonly TokenSwatch[] = [
-  {
-    label: "Background",
-    token: "--background",
-    surfaceClassName: "bg-background text-foreground",
-  },
-  {
-    label: "Card",
-    token: "--card",
-    surfaceClassName: "bg-card text-card-foreground",
-  },
-  {
-    label: "Muted",
-    token: "--muted",
-    surfaceClassName: "bg-muted text-muted-foreground",
-  },
-  {
-    label: "Primary",
-    token: "--primary",
-    surfaceClassName: "bg-primary text-primary-foreground",
-  },
-  {
-    label: "Secondary",
-    token: "--secondary",
-    surfaceClassName: "bg-secondary text-secondary-foreground",
-  },
-  {
-    label: "Destructive",
-    token: "--destructive",
-    surfaceClassName: "bg-destructive text-destructive-foreground",
-  },
-];
+import { login } from "@/lib/api";
+import { clearSession, readSession, saveSession } from "@/lib/session";
 
 export function App() {
-  const { theme, resolvedTheme } = useTheme();
+  const [session, setSession] = useState(readSession);
+  const [isNew, setIsNew] = useState(false);
+  const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (loading) return;
+    const trimmedUsername = username.trim();
+    if (!trimmedUsername) {
+      setError("Enter a username.");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      const result = await login(trimmedUsername);
+      saveSession(result);
+      setIsNew(result.isNew);
+      setSession(result);
+      setUsername("");
+    } catch (cause) {
+      if (isAxiosError(cause) && !cause.response) {
+        setError(
+          "Couldn’t reach the login service. Check your connection and try again.",
+        );
+      } else if (cause instanceof DOMException) {
+        setError(
+          "Couldn’t save your session. Allow browser storage and try again.",
+        );
+      } else {
+        setError("Login failed. Check your username and try again.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function handleLogout() {
+    try {
+      clearSession();
+      setSession(null);
+      setError("");
+    } catch {
+      setError(
+        "Couldn’t clear your saved session. Allow browser storage and try again.",
+      );
+    }
+  }
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="border-b border-border bg-background/80 backdrop-blur-xs">
-        <div className="mx-auto flex h-14 max-w-4xl items-center justify-between px-6">
-          <div className="flex items-center gap-3">
-            <span className="text-base font-semibold tracking-tight">
-              Conman
-            </span>
-            <span className="rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-xs text-muted-foreground">
-              {theme} ({resolvedTheme})
-            </span>
-          </div>
-          <ModeToggle />
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-4xl space-y-6 px-6 py-10">
-        <section className="space-y-4 rounded-xl border border-border bg-card p-6 text-card-foreground shadow-xs">
-          <div className="space-y-1">
-            <h1 className="text-xl font-semibold tracking-tight">
-              Design Token & Theme Preview
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              All surfaces, typography, borders, and actions below consume
-              central OKLCH tokens from{" "}
-              <code className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-xs text-foreground">
-                src/index.css
-              </code>
-              .
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-3">
-            {TOKEN_SWATCHES.map((swatch) => (
-              <div
-                key={swatch.token}
-                className={`rounded-lg border border-border p-3 ${swatch.surfaceClassName}`}
-              >
-                <div className="text-sm font-medium">{swatch.label}</div>
-                <div className="font-mono text-xs opacity-80">
-                  {swatch.token}
-                </div>
+    <main className="grid min-h-svh place-items-center bg-muted/40 p-5">
+      <section className="w-full max-w-sm space-y-6 rounded-xl border bg-card p-7 text-card-foreground shadow-xs">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {session
+            ? isNew
+              ? "Welcome, new user!"
+              : "Welcome back!"
+            : "Log in to Conman"}
+        </h1>
+        {session ? (
+          <>
+            <dl className="space-y-3">
+              <div>
+                <dt className="text-sm text-muted-foreground">Username</dt>
+                <dd className="break-all">{session.username}</dd>
               </div>
-            ))}
-          </div>
-
-          <div className="space-y-2 pt-2">
-            <h2 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-              Component Variants
-            </h2>
-            <div className="flex flex-wrap items-center gap-2.5">
-              <Button>Primary</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="outline">Outline</Button>
-              <Button variant="ghost">Ghost</Button>
-              <Button variant="destructive">Destructive</Button>
+              <div>
+                <dt className="text-sm text-muted-foreground">User ID</dt>
+                <dd className="break-all font-mono text-sm">
+                  {session.userId}
+                </dd>
+              </div>
+            </dl>
+            <Button variant="outline" onClick={handleLogout}>
+              Log out
+            </Button>
+          </>
+        ) : (
+          <form className="space-y-5" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium" htmlFor="username">
+                Username
+              </label>
+              <input
+                id="username"
+                name="username"
+                autoComplete="username"
+                className="h-10 w-full rounded-md border border-input bg-background px-3 focus-visible:outline-2"
+                required
+                disabled={loading}
+                value={username}
+                onChange={(event) => {
+                  setUsername(event.target.value);
+                  setError("");
+                }}
+              />
             </div>
-          </div>
-        </section>
-
-        <section className="rounded-xl border border-border bg-muted/50 p-4">
-          <h2 className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-            Typed Runtime Environment
-          </h2>
-          <dl className="mt-2 grid gap-2 font-mono text-xs sm:grid-cols-2">
-            <div className="rounded-md border border-border bg-card px-3 py-2 text-card-foreground">
-              <dt className="text-muted-foreground">VITE_API_URL</dt>
-              <dd className="mt-0.5 truncate">{env.VITE_API_URL}</dd>
-            </div>
-            <div className="rounded-md border border-border bg-card px-3 py-2 text-card-foreground">
-              <dt className="text-muted-foreground">VITE_WS_URL</dt>
-              <dd className="mt-0.5 truncate">{env.VITE_WS_URL}</dd>
-            </div>
-          </dl>
-        </section>
-      </main>
-    </div>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? "Logging in…" : "Log in"}
+            </Button>
+          </form>
+        )}
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+      </section>
+    </main>
   );
 }
