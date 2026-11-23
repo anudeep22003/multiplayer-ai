@@ -1,21 +1,17 @@
+import { z } from "zod";
+
 const SESSION_KEY = "conman-session";
 
-export interface Session {
-  userId: string;
-  username: string;
-}
+const nonBlankString = z.string().refine((value) => value.trim().length > 0);
+const sessionSchema = z.object({
+  userId: nonBlankString,
+  username: nonBlankString,
+});
+
+export type Session = z.infer<typeof sessionSchema>;
 
 export function isSession(value: unknown): value is Session {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "userId" in value &&
-    typeof value.userId === "string" &&
-    value.userId.trim() !== "" &&
-    "username" in value &&
-    typeof value.username === "string" &&
-    value.username.trim() !== ""
-  );
+  return sessionSchema.safeParse(value).success;
 }
 
 export function readSession(): Session | null {
