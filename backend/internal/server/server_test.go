@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"github.com/jackc/pgx/v5"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,7 +13,8 @@ import (
 )
 
 type stubDB struct {
-	err error
+	pgx.Tx // Supplies unused database methods for readiness tests.
+	err    error
 }
 
 func (s stubDB) Ping(_ context.Context) error {

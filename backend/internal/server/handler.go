@@ -4,6 +4,8 @@ import (
 	"context"
 	"net/http"
 	"time"
+
+	"github.com/jackc/pgx/v5"
 )
 
 const readinessTimeout = 2 * time.Second
@@ -11,6 +13,7 @@ const readinessTimeout = 2 * time.Second
 // DB defines the database operations required by the server's root handlers.
 type DB interface {
 	Ping(ctx context.Context) error
+	QueryRow(context.Context, string, ...any) pgx.Row
 }
 
 // Handler holds dependencies for the server's HTTP endpoints.
@@ -25,6 +28,8 @@ func NewHandler(db DB) *Handler {
 
 // RegisterRoutes attaches the handler's endpoints to mux.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
+	mux.HandleFunc("POST /login", h.Login)
+	mux.HandleFunc("GET /health", h.Healthz)
 	mux.HandleFunc("GET /healthz", h.Healthz)
 	mux.HandleFunc("GET /readyz", h.Readyz)
 }
