@@ -1,4 +1,4 @@
-import { type FormEvent, useState } from "react";
+import { type SubmitEvent, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -10,7 +10,7 @@ interface LoginFormProps {
 
 export function LoginForm({ loading, onLogin, onEdit }: LoginFormProps) {
   const [username, setUsername] = useState("");
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
     onLogin(username);
   }
