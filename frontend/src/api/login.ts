@@ -14,7 +14,7 @@ interface LoginRequest {
   username: string;
 }
 
-interface LoginResponse extends Session {
+export interface LoginResponse extends Session {
   isNew: boolean;
 }
 
