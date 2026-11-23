@@ -4,18 +4,6 @@
 
 `conman` (`github.com/anudeep22003/conman`) is a production Go backend server built with Go `1.27.2` and a standard-library-first philosophy.
 
-## Current Layout
-
-- `cmd/server/main.go` — Application entrypoint: loads optional `.env.local`, parses `Config`, initializes the PostgreSQL connection pool, wires OS signal handling (`SIGINT`, `SIGTERM`), and runs the HTTP server.
-- `internal/config.go` — Typed environment configuration (`Config`) parsed via `github.com/caarlos0/env/v11`.
-- `internal/postgres/postgres.go` — PostgreSQL connection pool construction (`postgres.NewPool` via `pgxpool`) with bounded startup `Ping`.
-- `internal/server/server.go` — `net/http` server construction (`server.New`), timeouts, and graceful shutdown (`server.Run`).
-- `internal/server/handlers.go` — Login, preflight, health, and readiness endpoint implementations.
-- `internal/server/routes.go` — `Handler`, its consumer `DB` interface, constructor, and HTTP route registrations.
-- `internal/server/middleware.go` — `Middleware` type, ordered middleware composition (`Chain`), and `PassThrough` middleware.
-- `compose.yaml` — Local PostgreSQL (`postgres:17-alpine`) service for development and integration tests.
-- `.env.sample` — Canonical template of supported environment variables. `.env` and `.env.local` are gitignored.
-
 As the codebase grows, organize new packages under `internal/` around clear responsibilities or domains rather than introducing premature layers or generic `util` packages.
 
 ## Commands
