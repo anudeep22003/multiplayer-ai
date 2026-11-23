@@ -2,7 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@/index.css";
 import { App } from "@/App";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/features/theme/theme-provider";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) {
@@ -11,7 +11,7 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <ThemeProvider defaultTheme="system" storageKey="conman-theme">
+    <ThemeProvider>
       <App />
     </ThemeProvider>
   </StrictMode>,

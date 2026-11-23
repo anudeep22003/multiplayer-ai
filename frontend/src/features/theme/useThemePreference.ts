@@ -1,33 +1,17 @@
-import {
-  createContext,
-  type ReactNode,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
+import { useEffect, useMemo, useState } from "react";
 export type Theme = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
 
 const DEFAULT_STORAGE_KEY = "conman-theme";
 const DARK_MEDIA_QUERY = "(prefers-color-scheme: dark)";
 
-interface ThemeProviderProps {
-  readonly children: ReactNode;
-  readonly defaultTheme?: Theme;
-  readonly storageKey?: string;
-}
-
-interface ThemeContextValue {
+export interface ThemeContextValue {
   readonly theme: Theme;
   readonly resolvedTheme: ResolvedTheme;
   readonly setTheme: (theme: Theme) => void;
 }
 
-const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
-
-function isTheme(value: string | null): value is Theme {
+export function isTheme(value: string | null): value is Theme {
   return value === "light" || value === "dark" || value === "system";
 }
 
@@ -50,11 +34,10 @@ function readStoredTheme(storageKey: string, fallback: Theme): Theme {
   }
 }
 
-export function ThemeProvider({
-  children,
-  defaultTheme = "system",
+export function useThemePreference(
+  defaultTheme: Theme = "system",
   storageKey = DEFAULT_STORAGE_KEY,
-}: ThemeProviderProps) {
+) {
   const [theme, setThemeState] = useState<Theme>(() =>
     readStoredTheme(storageKey, defaultTheme),
   );
@@ -80,7 +63,7 @@ export function ThemeProvider({
     root.style.colorScheme = resolvedTheme;
   }, [resolvedTheme]);
 
-  const value = useMemo<ThemeContextValue>(
+  return useMemo<ThemeContextValue>(
     () => ({
       theme,
       resolvedTheme,
@@ -95,16 +78,4 @@ export function ThemeProvider({
     }),
     [theme, resolvedTheme, storageKey],
   );
-
-  return (
-    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
-  );
-}
-
-export function useTheme(): ThemeContextValue {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider.");
-  }
-  return context;
 }

@@ -1,6 +1,4 @@
 import { Monitor, Moon, Sun } from "lucide-react";
-
-import { type Theme, useTheme } from "@/components/theme-provider";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -9,10 +7,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-function isThemeOption(value: string): value is Theme {
-  return value === "light" || value === "dark" || value === "system";
-}
+import { useTheme } from "./theme-provider";
+import { isTheme } from "./useThemePreference";
 
 export function ModeToggle() {
   const { theme, setTheme } = useTheme();
@@ -30,7 +26,7 @@ export function ModeToggle() {
         <DropdownMenuRadioGroup
           value={theme}
           onValueChange={(value) => {
-            if (isThemeOption(value)) {
+            if (isTheme(value)) {
               setTheme(value);
             }
           }}
