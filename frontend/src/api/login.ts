@@ -1,6 +1,6 @@
 import axios from "axios";
+import { isSession, readSession, type Session } from "@/features/login/session";
 import { VITE_API_URL } from "@/lib/env";
-import { isSession, readSession } from "@/lib/session";
 
 export const api = axios.create({ baseURL: VITE_API_URL });
 
@@ -10,8 +10,17 @@ api.interceptors.request.use((request) => {
   return request;
 });
 
-export async function login(username: string) {
-  const { data } = await api.post<unknown>("/login", { username });
+interface LoginRequest {
+  username: string;
+}
+
+interface LoginResponse extends Session {
+  isNew: boolean;
+}
+
+export async function login(username: string): Promise<LoginResponse> {
+  const request: LoginRequest = { username };
+  const { data } = await api.post<unknown>("/login", request);
   if (
     !isSession(data) ||
     !("isNew" in data) ||

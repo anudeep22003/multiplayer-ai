@@ -1,8 +1,12 @@
 import { isAxiosError } from "axios";
 import { type FormEvent, useState } from "react";
+import { login } from "@/api/login";
 import { Button } from "@/components/ui/button";
-import { login } from "@/lib/api";
-import { clearSession, readSession, saveSession } from "@/lib/session";
+import {
+  clearSession,
+  readSession,
+  saveSession,
+} from "@/features/login/session";
 
 export function App() {
   const [session, setSession] = useState(readSession);
