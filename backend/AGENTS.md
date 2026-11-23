@@ -6,7 +6,7 @@
 
 ## Current Layout
 
-- `cmd/main.go` — Application entrypoint: loads optional `.env.local`, parses `Config`, initializes the PostgreSQL connection pool, wires OS signal handling (`SIGINT`, `SIGTERM`), and runs the HTTP server.
+- `cmd/server/main.go` — Application entrypoint: loads optional `.env.local`, parses `Config`, initializes the PostgreSQL connection pool, wires OS signal handling (`SIGINT`, `SIGTERM`), and runs the HTTP server.
 - `internal/config.go` — Typed environment configuration (`Config`) parsed via `github.com/caarlos0/env/v11`.
 - `internal/postgres/postgres.go` — PostgreSQL connection pool construction (`postgres.NewPool` via `pgxpool`) with bounded startup `Ping`.
 - `internal/server/server.go` — `net/http` server construction (`server.New`), timeouts, and graceful shutdown (`server.Run`).
@@ -26,10 +26,10 @@ Run all commands from the backend root (`/Users/anudeep/@anudeep/everything/conm
 docker compose up -d --wait
 
 # Run locally
-go run ./cmd
+go run ./cmd/server
 
 # Build binary (gitignored under /bin/)
-go build -o bin/conman ./cmd
+go build -o bin/conman ./cmd/server
 
 # Static analysis
 go vet ./...
@@ -54,7 +54,7 @@ go test -race ./...
 - **Timeouts & Shutdown**: Every server, external HTTP client, and DB pool must have explicit timeouts. Long-running work and shutdown paths must respect `context.Context` deadlines.
 - **Context Propagation**: Always pass `r.Context()` down into service, database, and outbound network calls.
 - **Error Handling**: Wrap internal errors with context (`fmt.Errorf("...: %w", err)`), inspect with `errors.Is` / `errors.As`, and never expose internal error details or stack traces in client-facing HTTP responses.
-- **Entrypoint Discipline**: Keep `cmd/main.go` focused strictly on configuration loading, dependency wiring, and process lifecycle.
+- **Entrypoint Discipline**: Keep `cmd/server/main.go` focused strictly on configuration loading, dependency wiring, and process lifecycle.
 
 ### 4. Code Style & Testing
 - Accept small interfaces at the consumer side; return concrete structs from constructors.
