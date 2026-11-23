@@ -30,7 +30,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	router := handlers.NewRouter(pool, handlers.DevUserMiddleware)
-	adapter := httpadapter.NewV2(router)
+	handler := handlers.New(pool, handlers.DevUserMiddleware)
+	adapter := httpadapter.NewV2(handler)
 	lambda.Start(adapter.ProxyWithContext)
 }

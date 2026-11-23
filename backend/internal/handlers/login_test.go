@@ -17,7 +17,7 @@ import (
 func TestInvalidLogin(t *testing.T) {
 	for _, body := range []string{`{}`, `{"username":"  "}`, `{"username":1}`, `{"username":"valid"} {}`} {
 		rec := httptest.NewRecorder()
-		NewRouter(nil).ServeHTTP(rec, httptest.NewRequest("POST", "/login", strings.NewReader(body)))
+		New(nil).ServeHTTP(rec, httptest.NewRequest("POST", "/login", strings.NewReader(body)))
 		if rec.Code != 400 {
 			t.Errorf("login(%s) status = %d, want 400", body, rec.Code)
 		}
@@ -48,11 +48,11 @@ func TestLoginIntegration(t *testing.T) {
 	if _, err := tx.Exec(t.Context(), strings.Replace(string(migration), "CREATE TABLE", "CREATE TEMP TABLE", 1)); err != nil {
 		t.Fatal(err)
 	}
-	router := NewRouter(loginTestDB{tx})
+	handler := New(loginTestDB{tx})
 	var firstID string
 	for _, wantNew := range []bool{true, false} {
 		rec := httptest.NewRecorder()
-		router.ServeHTTP(rec, httptest.NewRequest("POST", "/login", strings.NewReader(`{"username":"  alice "}`)))
+		handler.ServeHTTP(rec, httptest.NewRequest("POST", "/login", strings.NewReader(`{"username":"  alice "}`)))
 		var got struct {
 			UserID   string
 			Username string

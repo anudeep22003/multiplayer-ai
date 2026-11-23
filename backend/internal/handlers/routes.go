@@ -18,8 +18,8 @@ type Handler struct {
 	db DB
 }
 
-// NewRouter registers the HTTP endpoints and applies middleware in the given order.
-func NewRouter(db DB, middlewares ...Middleware) http.Handler {
+// New registers the HTTP endpoints and applies middleware in the given order.
+func New(db DB, middlewares ...Middleware) http.Handler {
 	h := &Handler{db: db}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /login", h.Login)

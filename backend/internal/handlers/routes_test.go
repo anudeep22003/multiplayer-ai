@@ -19,7 +19,7 @@ func (s stubDB) Ping(_ context.Context) error {
 	return s.err
 }
 
-func TestNewRouter(t *testing.T) {
+func TestNew(t *testing.T) {
 	tagHeader := func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("X-Middleware", "applied")
@@ -82,11 +82,11 @@ func TestNewRouter(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			router := NewRouter(tc.db, tagHeader)
+			handler := New(tc.db, tagHeader)
 			req := httptest.NewRequest(tc.method, tc.target, nil)
 			rec := httptest.NewRecorder()
 
-			router.ServeHTTP(rec, req)
+			handler.ServeHTTP(rec, req)
 
 			if rec.Code != tc.wantStatus {
 				t.Errorf("status = %d, want %d", rec.Code, tc.wantStatus)
@@ -99,13 +99,13 @@ func TestNewRouter(t *testing.T) {
 }
 
 func TestLoginPreflight(t *testing.T) {
-	router := NewRouter(nil, DevUserMiddleware)
+	handler := New(nil, DevUserMiddleware)
 	req := httptest.NewRequest(http.MethodOptions, "/login", nil)
 	req.Header.Set("Origin", "http://localhost:5173")
 	req.Header.Set("Access-Control-Request-Method", "POST")
 	req.Header.Set("Access-Control-Request-Headers", "content-type")
 	rec := httptest.NewRecorder()
-	router.ServeHTTP(rec, req)
+	handler.ServeHTTP(rec, req)
 	if rec.Code != http.StatusNoContent || rec.Body.Len() != 0 {
 		t.Fatalf("preflight returned %d with body %q, want 204 with empty body", rec.Code, rec.Body.String())
 	}
