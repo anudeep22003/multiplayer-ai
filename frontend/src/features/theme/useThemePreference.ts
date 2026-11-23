@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 export type Theme = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
 
@@ -19,6 +20,7 @@ function getSystemTheme(): ResolvedTheme {
   if (typeof window === "undefined") {
     return "light";
   }
+
   return window.matchMedia(DARK_MEDIA_QUERY).matches ? "dark" : "light";
 }
 
@@ -26,6 +28,7 @@ function readStoredTheme(storageKey: string, fallback: Theme): Theme {
   if (typeof window === "undefined") {
     return fallback;
   }
+
   try {
     const stored = window.localStorage.getItem(storageKey);
     return isTheme(stored) ? stored : fallback;
@@ -45,12 +48,14 @@ export function useThemePreference(
 
   useEffect(() => {
     const mediaQuery = window.matchMedia(DARK_MEDIA_QUERY);
+
     const handleChange = (event: MediaQueryListEvent) => {
       setSystemTheme(event.matches ? "dark" : "light");
     };
 
     setSystemTheme(mediaQuery.matches ? "dark" : "light");
     mediaQuery.addEventListener("change", handleChange);
+
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
@@ -59,6 +64,7 @@ export function useThemePreference(
   useEffect(() => {
     const root = window.document.documentElement;
     const isDark = resolvedTheme === "dark";
+
     root.classList.toggle("dark", isDark);
     root.style.colorScheme = resolvedTheme;
   }, [resolvedTheme]);
@@ -73,6 +79,7 @@ export function useThemePreference(
         } catch {
           // Continue updating in-memory state if storage is unavailable.
         }
+
         setThemeState(nextTheme);
       },
     }),
