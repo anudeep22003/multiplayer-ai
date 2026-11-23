@@ -14,21 +14,15 @@ import (
 
 const shutdownTimeout = 15 * time.Second
 
-// New configures an HTTP server with the backend's routes, middlewares, and timeouts.
-func New(cfg *internal.Config, db DB, middlewares ...Middleware) *http.Server {
-	mux := http.NewServeMux()
-	h := NewHandler(db)
-	h.RegisterRoutes(mux)
-
-	handler := Chain(middlewares...)(mux)
-
+// New configures the HTTP listener and timeouts for router.
+func New(cfg *internal.Config, router http.Handler) *http.Server {
 	return &http.Server{
 		// Addr optionally specifies the TCP address for the server to listen on,
 		// in the form "host:port". If empty, ":http" (port 80) is used.
 		// The service names are defined in RFC 6335 and assigned by IANA.
 		// See net.Dial for details of the address format.
 		Addr:    net.JoinHostPort(cfg.Host, strconv.Itoa(int(cfg.Port))),
-		Handler: handler,
+		Handler: router,
 
 		// ReadTimeout is the maximum duration for reading the entire
 		// request, including the body. A zero or negative value means

@@ -18,16 +18,14 @@ type Handler struct {
 	db DB
 }
 
-// NewHandler constructs a Handler with its required dependencies.
-func NewHandler(db DB) *Handler {
-	return &Handler{db: db}
-}
-
-// RegisterRoutes attaches the handler's endpoints to mux.
-func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
+// NewRouter registers the HTTP endpoints and applies middleware in the given order.
+func NewRouter(db DB, middlewares ...Middleware) http.Handler {
+	h := &Handler{db: db}
+	mux := http.NewServeMux()
 	mux.HandleFunc("POST /login", h.Login)
 	mux.HandleFunc("OPTIONS /login", loginPreflight)
 	mux.HandleFunc("GET /health", h.Healthz)
 	mux.HandleFunc("GET /healthz", h.Healthz)
 	mux.HandleFunc("GET /readyz", h.Readyz)
+	return Chain(middlewares...)(mux)
 }

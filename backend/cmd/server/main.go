@@ -34,7 +34,8 @@ func main() {
 	}
 	defer pool.Close()
 
-	srv := server.New(&config, pool, server.PassThrough)
+	router := server.NewRouter(pool)
+	srv := server.New(&config, router)
 
 	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, srv.Addr)
 	if err := server.Run(ctx, srv); err != nil {
