@@ -23,7 +23,7 @@ func NewRouter(db DB, middlewares ...Middleware) http.Handler {
 	h := &Handler{db: db}
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /login", h.Login)
-	mux.HandleFunc("OPTIONS /login", loginPreflight)
+	mux.HandleFunc("OPTIONS /login", h.loginPreflight)
 	mux.HandleFunc("GET /health", h.Healthz)
 	mux.HandleFunc("GET /healthz", h.Healthz)
 	mux.HandleFunc("GET /readyz", h.Readyz)

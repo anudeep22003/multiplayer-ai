@@ -8,7 +8,7 @@ import (
 )
 
 // API Gateway supplies the CORS headers on the preflight response.
-func loginPreflight(w http.ResponseWriter, _ *http.Request) {
+func (h *Handler) loginPreflight(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
