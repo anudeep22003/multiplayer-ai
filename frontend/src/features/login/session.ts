@@ -2,24 +2,19 @@ import { z } from "zod";
 
 const SESSION_KEY = "conman-session";
 
-const nonBlankString = z.string().refine((value) => value.trim().length > 0);
-const sessionSchema = z.object({
-  userId: nonBlankString,
-  username: nonBlankString,
+export const SessionSchema = z.object({
+  userId: z.string().trim().min(1),
+  username: z.string().trim().min(1),
 });
 
-export type Session = z.infer<typeof sessionSchema>;
-
-export function isSession(value: unknown): value is Session {
-  return sessionSchema.safeParse(value).success;
-}
+export type Session = z.infer<typeof SessionSchema>;
 
 export function readSession(): Session | null {
   try {
     const stored = localStorage.getItem(SESSION_KEY);
     if (!stored) return null;
-    const session: unknown = JSON.parse(stored);
-    return isSession(session) ? session : null;
+    const parsed = SessionSchema.safeParse(JSON.parse(stored));
+    return parsed.success ? parsed.data : null;
   } catch {
     // Unavailable storage or invalid JSON means there is no usable session.
     return null;
