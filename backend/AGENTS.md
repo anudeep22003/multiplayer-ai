@@ -10,8 +10,8 @@
 - `internal/config.go` — Typed environment configuration (`Config`) parsed via `github.com/caarlos0/env/v11`.
 - `internal/postgres/postgres.go` — PostgreSQL connection pool construction (`postgres.NewPool` via `pgxpool`) with bounded startup `Ping`.
 - `internal/server/server.go` — `net/http` server construction (`server.New`), timeouts, and graceful shutdown (`server.Run`).
-- `internal/server/routes.go` — HTTP method and path registrations.
-- `internal/server/handlers.go` — `Handler`, its consumer `DB` interface, and the login, preflight, health, and readiness handlers.
+- `internal/server/routes.go` — Login, preflight, health, and readiness endpoint implementations.
+- `internal/server/handlers.go` — `Handler`, its consumer `DB` interface, constructor, and HTTP route registrations.
 - `internal/server/middleware.go` — `Middleware` type, ordered middleware composition (`Chain`), and `PassThrough` middleware.
 - `compose.yaml` — Local PostgreSQL (`postgres:17-alpine`) service for development and integration tests.
 - `.env.sample` — Canonical template of supported environment variables. `.env` and `.env.local` are gitignored.
