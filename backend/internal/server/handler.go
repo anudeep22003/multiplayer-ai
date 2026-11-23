@@ -29,6 +29,10 @@ func NewHandler(db DB) *Handler {
 // RegisterRoutes attaches the handler's endpoints to mux.
 func (h *Handler) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /login", h.Login)
+	// API Gateway supplies the CORS headers on the preflight response.
+	mux.HandleFunc("OPTIONS /login", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	})
 	mux.HandleFunc("GET /health", h.Healthz)
 	mux.HandleFunc("GET /healthz", h.Healthz)
 	mux.HandleFunc("GET /readyz", h.Readyz)

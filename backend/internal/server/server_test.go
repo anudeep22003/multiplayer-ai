@@ -121,3 +121,16 @@ func TestNew(t *testing.T) {
 		})
 	}
 }
+
+func TestLoginPreflight(t *testing.T) {
+	srv := New(&internal.Config{}, nil, DevUserMiddleware)
+	req := httptest.NewRequest(http.MethodOptions, "/login", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+	req.Header.Set("Access-Control-Request-Headers", "content-type")
+	rec := httptest.NewRecorder()
+	srv.Handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusNoContent || rec.Body.Len() != 0 {
+		t.Fatalf("preflight returned %d with body %q, want 204 with empty body", rec.Code, rec.Body.String())
+	}
+}
