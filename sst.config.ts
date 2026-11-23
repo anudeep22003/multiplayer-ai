@@ -14,7 +14,7 @@ export default $config({
     const apiHandler = new sst.aws.Function("ApiHandler", {
       runtime: "go",
       architecture: "arm64",
-      handler: "./backend/cmd/api",
+      handler: "./backend/cmd/api/main.go",
       timeout: "29 seconds",
       environment: {
         DATABASE_URL: databaseUrl.value,
