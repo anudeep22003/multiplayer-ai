@@ -14,15 +14,15 @@ import (
 
 const shutdownTimeout = 15 * time.Second
 
-// New configures the HTTP listener and timeouts for router.
-func New(cfg *internal.Config, router http.Handler) *http.Server {
+// New configures the HTTP listener and timeouts for handler.
+func New(cfg *internal.Config, handler http.Handler) *http.Server {
 	return &http.Server{
 		// Addr optionally specifies the TCP address for the server to listen on,
 		// in the form "host:port". If empty, ":http" (port 80) is used.
 		// The service names are defined in RFC 6335 and assigned by IANA.
 		// See net.Dial for details of the address format.
 		Addr:    net.JoinHostPort(cfg.Host, strconv.Itoa(int(cfg.Port))),
-		Handler: router,
+		Handler: handler,
 
 		// ReadTimeout is the maximum duration for reading the entire
 		// request, including the body. A zero or negative value means

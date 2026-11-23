@@ -19,10 +19,10 @@ func TestNew(t *testing.T) {
 		IdleTimeout:  30 * time.Second,
 	}
 
-	router := http.NewServeMux()
-	srv := New(&cfg, router)
-	if srv.Handler != router {
-		t.Fatal("server did not use supplied router")
+	handler := http.NewServeMux()
+	srv := New(&cfg, handler)
+	if srv.Handler != handler {
+		t.Fatal("server did not use supplied handler")
 	}
 
 	if srv.Addr != "127.0.0.1:9090" {
