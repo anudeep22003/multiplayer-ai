@@ -17,6 +17,7 @@ export function SessionDetails({
       <h1 className="text-2xl font-semibold tracking-tight">
         {isNew ? "Welcome, new user!" : "Welcome back!"}
       </h1>
+
       <dl className="space-y-3">
         <div>
           <dt className="text-sm text-muted-foreground">Username</dt>
@@ -27,6 +28,7 @@ export function SessionDetails({
           <dd className="break-all font-mono text-sm">{session.userId}</dd>
         </div>
       </dl>
+
       <Button variant="outline" onClick={onLogout}>
         Log out
       </Button>

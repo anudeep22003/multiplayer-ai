@@ -25,6 +25,7 @@ export function App() {
             onEdit={clearLoginError}
           />
         )}
+
         {error && (
           <p role="alert" className="text-sm text-destructive">
             {error}
