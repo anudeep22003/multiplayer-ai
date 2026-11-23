@@ -10,16 +10,19 @@ export const SessionSchema = z.object({
 export type Session = z.infer<typeof SessionSchema>;
 
 export function readSession(): Session | null {
+  let decodedSession: unknown;
   try {
     const stored = localStorage.getItem(SESSION_KEY);
     if (!stored) return null;
 
-    const parsed = SessionSchema.safeParse(JSON.parse(stored));
-    return parsed.success ? parsed.data : null;
+    decodedSession = JSON.parse(stored);
   } catch {
     // Unavailable storage or invalid JSON means there is no usable session.
     return null;
   }
+
+  const parsed = SessionSchema.safeParse(decodedSession);
+  return parsed.success ? parsed.data : null;
 }
 
 export function saveSession({ userId, username }: Session) {
