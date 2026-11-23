@@ -10,6 +10,7 @@ import (
 	"syscall"
 
 	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/conman/internal/handlers"
 	"github.com/anudeep22003/conman/internal/postgres"
 	"github.com/anudeep22003/conman/internal/server"
 	"github.com/joho/godotenv"
@@ -34,7 +35,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	router := server.NewRouter(pool)
+	router := handlers.NewRouter(pool)
 	srv := server.New(&config, router)
 
 	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, srv.Addr)

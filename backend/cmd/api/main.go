@@ -7,8 +7,8 @@ import (
 	"log"
 
 	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/conman/internal/handlers"
 	"github.com/anudeep22003/conman/internal/postgres"
-	"github.com/anudeep22003/conman/internal/server"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 	"github.com/joho/godotenv"
@@ -30,7 +30,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	router := server.NewRouter(pool, server.DevUserMiddleware)
+	router := handlers.NewRouter(pool, handlers.DevUserMiddleware)
 	adapter := httpadapter.NewV2(router)
 	lambda.Start(adapter.ProxyWithContext)
 }
