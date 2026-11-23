@@ -13,6 +13,7 @@ export function readSession(): Session | null {
   try {
     const stored = localStorage.getItem(SESSION_KEY);
     if (!stored) return null;
+
     const parsed = SessionSchema.safeParse(JSON.parse(stored));
     return parsed.success ? parsed.data : null;
   } catch {

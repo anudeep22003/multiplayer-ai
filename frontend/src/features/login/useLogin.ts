@@ -26,12 +26,15 @@ export function useLogin() {
 
   async function handleLogin(username: string) {
     if (state.status === "submitting" || state.status === "signedIn") return;
+
     const trimmedUsername = username.trim();
     if (!trimmedUsername) {
       setState({ status: "failed", error: "Enter a username." });
       return;
     }
+
     setState({ status: "submitting" });
+
     let result: LoginResponse;
     try {
       result = await login(trimmedUsername);
@@ -40,9 +43,11 @@ export function useLogin() {
         isAxiosError(cause) && !cause.response
           ? "Couldn’t reach the login service. Check your connection and try again."
           : "Login failed. Check your username and try again.";
+
       setState({ status: "failed", error });
       return;
     }
+
     try {
       saveSession(result);
     } catch {
@@ -53,11 +58,13 @@ export function useLogin() {
       });
       return;
     }
+
     setState({ status: "signedIn", session: result, isNew: result.isNew });
   }
 
   function handleLogout() {
     if (state.status !== "signedIn") return;
+
     try {
       clearSession();
       setState({ status: "idle" });

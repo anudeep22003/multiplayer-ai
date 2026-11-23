@@ -32,6 +32,7 @@
 
 ## 5. TypeScript & Code Hygiene
 
+- **Separate logical blocks with a blank line.** Keep statements that perform one step together. Start a new block when the purpose changes, such as moving from input validation to a request, from a request to session storage, or from event handlers to rendering.
 - **No `any`.** Use `unknown` and narrow it, or define explicit types.
 - **Type props cleanly.** Prefer `type` or `interface` directly above the component. Avoid `React.FC`; type props directly on the function signature.
 - **Use discriminated unions for state machines.** Instead of multiple booleans (`isLoading`, `isError`, `isSuccess`), prefer a union type (`{ status: 'loading' } | { status: 'error'; error: Error } | { status: 'success'; data: T }`).
