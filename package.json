@@ -1,0 +1,7 @@
+{
+  "name": "conman",
+  "private": true,
+  "devDependencies": {
+    "sst": "3.19.3"
+  }
+}
