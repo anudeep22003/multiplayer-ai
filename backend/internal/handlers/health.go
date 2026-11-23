@@ -8,6 +8,14 @@ import (
 
 const readinessTimeout = 2 * time.Second
 
+func (h *Handler) operationalMux() *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("GET /health", h.Healthz)
+	mux.HandleFunc("GET /healthz", h.Healthz)
+	mux.HandleFunc("GET /readyz", h.Readyz)
+	return mux
+}
+
 // Healthz reports process liveness without checking external dependencies.
 func (h *Handler) Healthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)

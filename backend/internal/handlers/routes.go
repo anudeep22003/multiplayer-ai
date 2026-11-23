@@ -22,10 +22,7 @@ type Handler struct {
 func New(db DB, middlewares ...Middleware) http.Handler {
 	h := &Handler{db: db}
 	mux := http.NewServeMux()
-	mux.HandleFunc("POST /login", h.Login)
-	mux.HandleFunc("OPTIONS /login", h.loginPreflight)
-	mux.HandleFunc("GET /health", h.Healthz)
-	mux.HandleFunc("GET /healthz", h.Healthz)
-	mux.HandleFunc("GET /readyz", h.Readyz)
+	mux.Handle("/login", h.authMux())
+	mux.Handle("/", h.operationalMux())
 	return Chain(middlewares...)(mux)
 }

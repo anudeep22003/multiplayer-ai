@@ -35,6 +35,18 @@ func TestNew(t *testing.T) {
 		wantStatus int
 	}{
 		{
+			name:       "GET health reaches operational mux",
+			method:     http.MethodGet,
+			target:     "/health",
+			wantStatus: http.StatusOK,
+		},
+		{
+			name:       "GET login rejected by auth mux",
+			method:     http.MethodGet,
+			target:     "/login",
+			wantStatus: http.StatusMethodNotAllowed,
+		},
+		{
 			name:       "GET healthz succeeds even when db fails",
 			db:         stubDB{err: errors.New("db down")},
 			method:     http.MethodGet,

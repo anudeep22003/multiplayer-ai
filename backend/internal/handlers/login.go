@@ -7,6 +7,13 @@ import (
 	"strings"
 )
 
+func (h *Handler) authMux() *http.ServeMux {
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /login", h.Login)
+	mux.HandleFunc("OPTIONS /login", h.loginPreflight)
+	return mux
+}
+
 // API Gateway supplies the CORS headers on the preflight response.
 func (h *Handler) loginPreflight(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
