@@ -43,14 +43,10 @@ go test -race ./...
 - **Timeouts & Shutdown**: Every server, external HTTP client, and DB pool must have explicit timeouts. Long-running work and shutdown paths must respect `context.Context` deadlines.
 - **Context Propagation**: Always pass `r.Context()` down into service, database, and outbound network calls.
 - **Error Handling**: Wrap internal errors with context (`fmt.Errorf("...: %w", err)`), inspect with `errors.Is` / `errors.As`, and never expose internal error details or stack traces in client-facing HTTP responses.
-- **Entrypoint Discipline**: Keep `cmd/server/main.go` focused strictly on configuration loading, dependency wiring, and process lifecycle.
+- **Route & Wiring Structure**: Domain handlers live in `internal/handlers/<domain>` with a `NewMux(...) *http.ServeMux` constructor and narrow consumer-defined interfaces. `internal/handlers` holds generic assembly and middleware (`Assemble`, `RouteGroup`, `Chain`); `internal/app` is the single composition root that wires concrete dependencies and middleware onto route groups.
+- **Entrypoint Discipline**: Keep `cmd/server/main.go` (HTTP server) and `cmd/api/main.go` (AWS Lambda) focused strictly on configuration loading, resource lifecycle, and transport startup; keep shared route/dependency wiring in `internal/app`.
 
 ### 4. Code Style & Testing
 - Accept small interfaces at the consumer side; return concrete structs from constructors.
 - Write deterministic, table-driven tests (`*_test.go`) alongside implementation code, using `net/http/httptest` for HTTP handlers.
-- Always verify changes with `go vet ./...` and `go test -race ./...` before considering work complete.
-
-### 5. Git & Commit Discipline
-- Commit work in small, logical, self-contained chunks that are easy to review independently.
-- Keep distinct concerns (e.g., refactors/package moves, new features, bug fixes, and documentation) in separate commits rather than bundling them together.
-- Verify every commit builds and passes `go vet ./...` and `go test -race ./...` before committing.
+- Always verify changes with `go vet ./...`, `go test -race ./...`, and `go build ./...` before considering work complete.
