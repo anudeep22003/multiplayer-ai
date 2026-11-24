@@ -5,7 +5,12 @@ export default $config({
     return {
       name: "conman",
       home: "aws",
-      providers: { aws: { region: "us-east-2" } },
+      providers: {
+        aws: {
+          region: "us-east-2",
+          profile: process.env.CI ? undefined : "sst-dev",
+        }
+      },
       removal: input?.stage === "prod" ? "retain" : "remove",
     };
   },
@@ -30,13 +35,14 @@ export default $config({
         $app.stage === "prod"
           ? false
           : {
-              allowOrigins: ["http://localhost:5173"],
-              allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-              allowHeaders: ["Content-Type", "Authorization", "X-Dev-User-Id"],
-            },
+            allowOrigins: ["http://localhost:5173"],
+            allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+            allowHeaders: ["Content-Type", "Authorization", "X-Dev-User-Id"],
+          },
     });
     httpApi.route("ANY /{proxy+}", apiHandler.arn);
 
     return { apiUrl: httpApi.url };
   },
 });
+
