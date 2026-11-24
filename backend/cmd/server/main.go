@@ -10,9 +10,7 @@ import (
 	"syscall"
 
 	"github.com/anudeep22003/conman/internal"
-	"github.com/anudeep22003/conman/internal/handlers"
-	"github.com/anudeep22003/conman/internal/handlers/auth"
-	"github.com/anudeep22003/conman/internal/handlers/health"
+	"github.com/anudeep22003/conman/internal/app"
 	"github.com/anudeep22003/conman/internal/postgres"
 	"github.com/anudeep22003/conman/internal/server"
 	"github.com/joho/godotenv"
@@ -37,12 +35,8 @@ func main() {
 	}
 	defer pool.Close()
 
-	mux := handlers.Assemble(
-		handlers.RouteGroup{Prefix: "", Handler: health.NewMux(pool)},
-		handlers.RouteGroup{Prefix: "/auth", Handler: auth.NewMux(pool)},
-	)
-
-	srv := server.New(&config, mux)
+	handler := app.NewHandler(pool)
+	srv := server.New(&config, handler)
 
 	log.Printf("Starting %s (%s) on %s", config.AppName, config.Environment, srv.Addr)
 	if err := server.Run(ctx, srv); err != nil {

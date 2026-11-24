@@ -7,9 +7,7 @@ import (
 	"log"
 
 	"github.com/anudeep22003/conman/internal"
-	"github.com/anudeep22003/conman/internal/handlers"
-	"github.com/anudeep22003/conman/internal/handlers/auth"
-	"github.com/anudeep22003/conman/internal/handlers/health"
+	"github.com/anudeep22003/conman/internal/app"
 	"github.com/anudeep22003/conman/internal/postgres"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
@@ -32,10 +30,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	handler := handlers.Assemble(
-		handlers.RouteGroup{Prefix: "", Handler: health.NewMux(pool)},
-		handlers.RouteGroup{Prefix: "/auth", Handler: auth.NewMux(pool)},
-	)
+	handler := app.NewHandler(pool)
 
 	adapter := httpadapter.NewV2(handler)
 	lambda.Start(adapter.ProxyWithContext)
