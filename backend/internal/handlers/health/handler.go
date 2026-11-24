@@ -1,4 +1,4 @@
-package handlers
+package health
 
 import (
 	"context"
@@ -6,22 +6,30 @@ import (
 	"time"
 )
 
-const readinessTimeout = 2 * time.Second
+const readinessTimeout = time.Second * 5
 
-func (h *Handler) operationalMux() *http.ServeMux {
+type DB interface {
+	Ping(ctx context.Context) error
+}
+
+type Handler struct {
+	db DB
+}
+
+func NewSrvMux(db DB) *http.ServeMux {
+	h := &Handler{db: db}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", h.Healthz)
 	mux.HandleFunc("GET /healthz", h.Healthz)
-	mux.HandleFunc("GET /readyz", h.Readyz)
+	mux.HandleFunc("GET /ready", h.Readyz)
 	return mux
 }
 
-// Healthz reports process liveness without checking external dependencies.
+// handler methods
 func (h *Handler) Healthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// Readyz verifies downstream dependencies (PostgreSQL) can serve traffic.
 func (h *Handler) Readyz(w http.ResponseWriter, r *http.Request) {
 	if h.db == nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
