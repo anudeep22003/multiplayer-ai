@@ -3,8 +3,6 @@ package handlers
 import (
 	"net/http"
 	"strings"
-
-	"github.com/anudeep22003/conman/internal/handlers/health"
 )
 
 type handler interface {
@@ -16,21 +14,10 @@ type RouteGroup struct {
 	Handler http.Handler
 }
 
-type deps struct {
-	dbPool DB
-}
+func Assemble(root *http.ServeMux, rgs ...RouteGroup) *http.ServeMux {
+	// given a root and routegroup, assemble all the muxes onto it
 
-func AssembledHttpMux(deps *deps) *http.ServeMux {
-	root := http.NewServeMux()
-
-	routes := []RouteGroup{
-		{
-			Prefix:  "",
-			Handler: health.RegisterRoutes(deps.dbPool),
-		},
-	}
-
-	for _, r := range routes {
+	for _, r := range rgs {
 		mount(root, r.Prefix, r.Handler)
 	}
 
@@ -39,6 +26,7 @@ func AssembledHttpMux(deps *deps) *http.ServeMux {
 }
 
 func mount(root *http.ServeMux, prefix string, h http.Handler) {
+	// safe handling somebody adding a `/` at the end
 	prefix = strings.TrimSuffix(prefix, "/")
 	root.Handle(prefix+"/", http.StripPrefix(prefix, h))
 }
