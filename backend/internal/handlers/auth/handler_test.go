@@ -1,9 +1,8 @@
-package handlers
+package auth
 
 import (
-	"context"
 	"encoding/json"
-	"github.com/jackc/pgx/v5"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
@@ -15,12 +14,35 @@ import (
 )
 
 func TestInvalidLogin(t *testing.T) {
+	mux := NewMux(nil)
 	for _, body := range []string{`{}`, `{"username":"  "}`, `{"username":1}`, `{"username":"valid"} {}`} {
 		rec := httptest.NewRecorder()
-		New(nil).ServeHTTP(rec, httptest.NewRequest("POST", "/login", strings.NewReader(body)))
-		if rec.Code != 400 {
-			t.Errorf("login(%s) status = %d, want 400", body, rec.Code)
+		mux.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(body)))
+		if rec.Code != http.StatusBadRequest {
+			t.Errorf("login(%s) status = %d, want %d", body, rec.Code, http.StatusBadRequest)
 		}
+	}
+}
+
+func TestLoginMethodNotAllowed(t *testing.T) {
+	rec := httptest.NewRecorder()
+	NewMux(nil).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/login", nil))
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Fatalf("status = %d, want %d", rec.Code, http.StatusMethodNotAllowed)
+	}
+}
+
+func TestLoginPreflight(t *testing.T) {
+	req := httptest.NewRequest(http.MethodOptions, "/login", nil)
+	req.Header.Set("Origin", "http://localhost:5173")
+	req.Header.Set("Access-Control-Request-Method", "POST")
+	req.Header.Set("Access-Control-Request-Headers", "content-type")
+	rec := httptest.NewRecorder()
+
+	NewMux(nil).ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusNoContent || rec.Body.Len() != 0 {
+		t.Fatalf("preflight returned %d with body %q, want 204 with empty body", rec.Code, rec.Body.String())
 	}
 }
 
@@ -35,30 +57,34 @@ func TestLoginIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer pool.Close()
-	migration, err := os.ReadFile("../../migrations/001_users.sql")
+
+	migration, err := os.ReadFile("../../../migrations/001_users.sql")
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	// Use a temporary table scoped to the test transaction.
 	tx, err := pool.Begin(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer tx.Rollback(t.Context())
+
 	if _, err := tx.Exec(t.Context(), strings.Replace(string(migration), "CREATE TABLE", "CREATE TEMP TABLE", 1)); err != nil {
 		t.Fatal(err)
 	}
-	handler := New(loginTestDB{tx})
+
+	mux := NewMux(tx)
 	var firstID string
 	for _, wantNew := range []bool{true, false} {
 		rec := httptest.NewRecorder()
-		handler.ServeHTTP(rec, httptest.NewRequest("POST", "/login", strings.NewReader(`{"username":"  alice "}`)))
+		mux.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"username":"  alice "}`)))
 		var got struct {
 			UserID   string
 			Username string
 			IsNew    *bool
 		}
-		if rec.Code != 200 {
+		if rec.Code != http.StatusOK {
 			t.Fatalf("status = %d: %s", rec.Code, rec.Body.String())
 		}
 		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
@@ -73,7 +99,3 @@ func TestLoginIntegration(t *testing.T) {
 		firstID = got.UserID
 	}
 }
-
-type loginTestDB struct{ pgx.Tx }
-
-func (loginTestDB) Ping(context.Context) error { return nil }

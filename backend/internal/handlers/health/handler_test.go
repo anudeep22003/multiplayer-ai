@@ -1,4 +1,4 @@
-package handlers
+package health
 
 import (
 	"context"
@@ -6,27 +6,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/jackc/pgx/v5"
 )
 
 type stubDB struct {
-	pgx.Tx // Supplies unused database methods for readiness tests.
-	err    error
+	err error
 }
 
 func (s stubDB) Ping(_ context.Context) error {
 	return s.err
 }
 
-func TestNew(t *testing.T) {
-	tagHeader := func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("X-Middleware", "applied")
-			next.ServeHTTP(w, r)
-		})
-	}
-
+func TestNewMux(t *testing.T) {
 	tests := []struct {
 		name       string
 		db         DB
@@ -35,16 +25,10 @@ func TestNew(t *testing.T) {
 		wantStatus int
 	}{
 		{
-			name:       "GET health reaches operational mux",
+			name:       "GET health succeeds",
 			method:     http.MethodGet,
 			target:     "/health",
 			wantStatus: http.StatusOK,
-		},
-		{
-			name:       "GET login rejected by auth mux",
-			method:     http.MethodGet,
-			target:     "/login",
-			wantStatus: http.StatusMethodNotAllowed,
 		},
 		{
 			name:       "GET healthz succeeds even when db fails",
@@ -59,6 +43,13 @@ func TestNew(t *testing.T) {
 			method:     http.MethodPost,
 			target:     "/healthz",
 			wantStatus: http.StatusMethodNotAllowed,
+		},
+		{
+			name:       "GET ready succeeds when db healthy",
+			db:         stubDB{},
+			method:     http.MethodGet,
+			target:     "/ready",
+			wantStatus: http.StatusOK,
 		},
 		{
 			name:       "GET readyz succeeds when db healthy",
@@ -94,31 +85,15 @@ func TestNew(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			t.Parallel()
 
-			handler := New(tc.db, tagHeader)
+			mux := NewMux(tc.db)
 			req := httptest.NewRequest(tc.method, tc.target, nil)
 			rec := httptest.NewRecorder()
 
-			handler.ServeHTTP(rec, req)
+			mux.ServeHTTP(rec, req)
 
 			if rec.Code != tc.wantStatus {
 				t.Errorf("status = %d, want %d", rec.Code, tc.wantStatus)
 			}
-			if got := rec.Header().Get("X-Middleware"); got != "applied" {
-				t.Errorf("X-Middleware = %q, want %q", got, "applied")
-			}
 		})
-	}
-}
-
-func TestLoginPreflight(t *testing.T) {
-	handler := New(nil, DevUserMiddleware)
-	req := httptest.NewRequest(http.MethodOptions, "/login", nil)
-	req.Header.Set("Origin", "http://localhost:5173")
-	req.Header.Set("Access-Control-Request-Method", "POST")
-	req.Header.Set("Access-Control-Request-Headers", "content-type")
-	rec := httptest.NewRecorder()
-	handler.ServeHTTP(rec, req)
-	if rec.Code != http.StatusNoContent || rec.Body.Len() != 0 {
-		t.Fatalf("preflight returned %d with body %q, want 204 with empty body", rec.Code, rec.Body.String())
 	}
 }

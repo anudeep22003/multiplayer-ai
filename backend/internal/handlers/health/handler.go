@@ -16,21 +16,21 @@ type handler struct {
 	db DB
 }
 
-func NewSrvMux(db DB) *http.ServeMux {
+func NewMux(db DB) *http.ServeMux {
 	h := &handler{db: db}
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /health", h.Healthz)
-	mux.HandleFunc("GET /healthz", h.Healthz)
-	mux.HandleFunc("GET /ready", h.Readyz)
+	mux.HandleFunc("GET /health", h.healthz)
+	mux.HandleFunc("GET /healthz", h.healthz)
+	mux.HandleFunc("GET /ready", h.readyz)
+	mux.HandleFunc("GET /readyz", h.readyz)
 	return mux
 }
 
-// handler methods
-func (h *handler) Healthz(w http.ResponseWriter, _ *http.Request) {
+func (h *handler) healthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *handler) Readyz(w http.ResponseWriter, r *http.Request) {
+func (h *handler) readyz(w http.ResponseWriter, r *http.Request) {
 	if h.db == nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return

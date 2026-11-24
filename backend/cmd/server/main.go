@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/fs"
 	"log"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -38,12 +37,9 @@ func main() {
 	}
 	defer pool.Close()
 
-	rootMux := http.NewServeMux()
-
 	mux := handlers.Assemble(
-		rootMux,
-		handlers.RouteGroup{Prefix: "", Handler: health.NewSrvMux(pool)},
-		handlers.RouteGroup{Prefix: "/auth", Handler: auth.NewSrvMux(pool)},
+		handlers.RouteGroup{Prefix: "", Handler: health.NewMux(pool)},
+		handlers.RouteGroup{Prefix: "/auth", Handler: auth.NewMux(pool)},
 	)
 
 	srv := server.New(&config, mux)

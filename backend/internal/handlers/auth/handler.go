@@ -3,6 +3,8 @@ package auth
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
 	"strings"
 
@@ -17,7 +19,7 @@ type handler struct {
 	db DB
 }
 
-func NewSrvMux(db DB) *http.ServeMux {
+func NewMux(db DB) *http.ServeMux {
 	h := &handler{db: db}
 
 	mux := http.NewServeMux()
@@ -61,6 +63,10 @@ func (h *handler) login(w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&input); err != nil {
+		http.Error(w, "invalid JSON", http.StatusBadRequest)
+		return
+	}
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
 		http.Error(w, "invalid JSON", http.StatusBadRequest)
 		return
 	}

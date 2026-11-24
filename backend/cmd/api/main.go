@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io/fs"
 	"log"
-	"net/http"
 
 	"github.com/anudeep22003/conman/internal"
 	"github.com/anudeep22003/conman/internal/handlers"
@@ -33,12 +32,9 @@ func main() {
 	}
 	defer pool.Close()
 
-	rootMux := http.NewServeMux()
-
 	handler := handlers.Assemble(
-		rootMux,
-		handlers.RouteGroup{Prefix: "", Handler: health.NewSrvMux(pool)},
-		handlers.RouteGroup{Prefix: "/auth", Handler: auth.NewSrvMux(pool)},
+		handlers.RouteGroup{Prefix: "", Handler: health.NewMux(pool)},
+		handlers.RouteGroup{Prefix: "/auth", Handler: auth.NewMux(pool)},
 	)
 
 	adapter := httpadapter.NewV2(handler)
