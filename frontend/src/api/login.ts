@@ -5,6 +5,8 @@ import { VITE_API_URL } from "@/lib/env";
 
 export const api = axios.create({ baseURL: VITE_API_URL });
 
+const LoginRoute = "/auth/login";
+
 api.interceptors.request.use((request) => {
   const session = readSession();
   if (session) request.headers.set("X-Dev-User-Id", session.userId);
@@ -21,7 +23,7 @@ export type LoginResponse = z.infer<typeof LoginResponseSchema>;
 
 export async function login(username: string): Promise<LoginResponse> {
   const request: LoginRequest = { username };
-  const { data } = await api.post<unknown>("/login", request);
+  const { data } = await api.post<unknown>(LoginRoute, request);
 
   const parsed = LoginResponseSchema.safeParse(data);
   if (!parsed.success) {
