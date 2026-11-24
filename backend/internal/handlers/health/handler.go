@@ -12,12 +12,12 @@ type DB interface {
 	Ping(ctx context.Context) error
 }
 
-type Handler struct {
+type handler struct {
 	db DB
 }
 
 func NewSrvMux(db DB) *http.ServeMux {
-	h := &Handler{db: db}
+	h := &handler{db: db}
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /health", h.Healthz)
 	mux.HandleFunc("GET /healthz", h.Healthz)
@@ -26,11 +26,11 @@ func NewSrvMux(db DB) *http.ServeMux {
 }
 
 // handler methods
-func (h *Handler) Healthz(w http.ResponseWriter, _ *http.Request) {
+func (h *handler) Healthz(w http.ResponseWriter, _ *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func (h *Handler) Readyz(w http.ResponseWriter, r *http.Request) {
+func (h *handler) Readyz(w http.ResponseWriter, r *http.Request) {
 	if h.db == nil {
 		w.WriteHeader(http.StatusServiceUnavailable)
 		return
