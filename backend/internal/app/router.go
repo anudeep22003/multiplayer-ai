@@ -12,7 +12,11 @@ import (
 // NewHandler wires all HTTP route groups onto a single root handler.
 func NewHandler(pool *pgxpool.Pool) http.Handler {
 	return handlers.Assemble(
-		handlers.RouteGroup{Prefix: "", Handler: health.NewMux(pool)},
-		handlers.RouteGroup{Prefix: "/auth", Handler: auth.NewMux(pool)},
+		handlers.RouteGroup{
+			Prefix: "", Handler: health.NewMux(pool),
+		},
+		handlers.RouteGroup{
+			Prefix: "/auth", Handler: handlers.DevUserMiddleware(auth.NewMux(pool)),
+		},
 	)
 }
