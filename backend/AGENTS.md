@@ -8,24 +8,7 @@ As the codebase grows, organize new packages under `internal/` around clear resp
 
 ## Commands
 
-Run all commands from the backend root (`/Users/anudeep/@anudeep/projects/multiplayer-ai/backend`) so `.env.local` and module paths resolve properly:
-
-```sh
-# Start local PostgreSQL container
-docker compose up -d --wait
-
-# Run locally
-go run ./cmd/server
-
-# Build binary (gitignored under /bin/)
-go build -o bin/multiplayer-ai ./cmd/server
-
-# Static analysis
-go vet ./...
-
-# Run tests with race detector
-go test -race ./...
-```
+Run all commands from `backend/` so `.env.local` and module paths resolve properly; see `Makefile` for common targets.
 
 ## Engineering Guidelines
 
@@ -44,9 +27,16 @@ go test -race ./...
 - **Context Propagation**: Always pass `r.Context()` down into service, database, and outbound network calls.
 - **Error Handling**: Wrap internal errors with context (`fmt.Errorf("...: %w", err)`), inspect with `errors.Is` / `errors.As`, and never expose internal error details or stack traces in client-facing HTTP responses.
 - **Route & Wiring Structure**: Domain handlers live in `internal/handlers/<domain>` with a `NewMux(...) *http.ServeMux` constructor and narrow consumer-defined interfaces. `internal/handlers` holds generic assembly and middleware (`Assemble`, `RouteGroup`, `Chain`); `internal/app` is the single composition root that wires concrete dependencies and middleware onto route groups.
-- **Entrypoint Discipline**: Keep `cmd/server/main.go` (HTTP server) and `cmd/api/main.go` (AWS Lambda) focused strictly on configuration loading, resource lifecycle, and transport startup; keep shared route/dependency wiring in `internal/app`.
+- **Entrypoint Discipline**: Keep `cmd/server/main.go` (HTTP server), `cmd/api/main.go` (AWS Lambda), and `cmd/migrate/main.go` (goose CLI) focused strictly on configuration loading, resource lifecycle, and transport/command startup; keep shared route/dependency wiring in `internal/app`.
 
-### 4. Code Style & Testing
+### 4. Database, Migrations & Queries
+- **Migrations**: Add sequential SQL files in `migrations/*.sql` with `-- +goose Up` / `-- +goose Down` markers; apply via `cmd/migrate` using `DIRECT_DATABASE_URL` (keep `DIRECT_DATABASE_URL` out of `internal.Config`).
+- **Queries (`sqlc`)**: Put static queries in `queries/<domain>.sql` and run `make sqlc` (`sqlc generate`); never edit `internal/db/*.go` manually, and always commit generated files.
+- **Consumer Interfaces**: Handlers depend on narrow domain interfaces satisfied by `*db.Queries` (wired in `internal/app`), rather than importing `pgx` directly.
+- **Transactions**: For multi-query atomicity, begin a `pgx.Tx` from `*pgxpool.Pool` in a small service/repository and run `queries.WithTx(tx)`.
+- **Raw SQL Escape Hatch**: Drop down to `*pgxpool.Pool` + `pgx.CollectRows` only for dynamic queries (variable `WHERE` clauses, dynamic sorting) that `sqlc` cannot express cleanly.
+
+### 5. Code Style & Testing
 - Accept small interfaces at the consumer side; return concrete structs from constructors.
 - Write deterministic, table-driven tests (`*_test.go`) alongside implementation code, using `net/http/httptest` for HTTP handlers.
 - Always verify changes with `go vet ./...`, `go test -race ./...`, and `go build ./...` before considering work complete.
