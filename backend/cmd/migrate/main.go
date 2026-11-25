@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io/fs"
 	"log"
+	"net/url"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -44,7 +46,28 @@ func main() {
 	}
 }
 
+func validateDirectDSN(dsn string) error {
+	u, err := url.Parse(dsn)
+	if err != nil {
+		return errors.New("invalid DIRECT_DATABASE_URL format")
+	}
+	if u.Scheme != "postgres" && u.Scheme != "postgresql" {
+		return errors.New("DIRECT_DATABASE_URL must use postgres:// or postgresql:// scheme")
+	}
+	if u.Port() == "6543" {
+		return errors.New("DIRECT_DATABASE_URL cannot use transaction pooler port 6543; use direct or session pooler port 5432")
+	}
+	if strings.EqualFold(u.Query().Get("pgbouncer"), "true") {
+		return errors.New("DIRECT_DATABASE_URL cannot use pgbouncer=true transaction pooler; use direct or session pooler URL")
+	}
+	return nil
+}
+
 func run(ctx context.Context, dsn, command string, args ...string) error {
+	if err := validateDirectDSN(dsn); err != nil {
+		return err
+	}
+
 	db, err := sql.Open("pgx", dsn)
 	if err != nil {
 		return fmt.Errorf("open db: %w", err)
