@@ -1,7 +1,9 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -10,8 +12,68 @@ import (
 	"time"
 
 	"github.com/anudeep22003/multiplayer-ai/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal/db"
 	"github.com/anudeep22003/multiplayer-ai/internal/postgres"
 )
+
+type stubUserStore struct {
+	fn func(ctx context.Context, username string) (db.UpsertUserRow, error)
+}
+
+func (s stubUserStore) UpsertUser(ctx context.Context, username string) (db.UpsertUserRow, error) {
+	return s.fn(ctx, username)
+}
+
+func TestLogin(t *testing.T) {
+	t.Run("trims username and returns upserted user", func(t *testing.T) {
+		var gotUsername string
+		store := stubUserStore{
+			fn: func(_ context.Context, username string) (db.UpsertUserRow, error) {
+				gotUsername = username
+				return db.UpsertUserRow{ID: "user-123", Username: username, IsNew: true}, nil
+			},
+		}
+
+		rec := httptest.NewRecorder()
+		NewMux(store).ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"username":"  alice  "}`)))
+
+		if rec.Code != http.StatusOK {
+			t.Fatalf("status = %d, want %d: %s", rec.Code, http.StatusOK, rec.Body.String())
+		}
+		if gotUsername != "alice" {
+			t.Fatalf("store username = %q, want %q", gotUsername, "alice")
+		}
+		var got struct {
+			UserID   string `json:"userId"`
+			Username string `json:"username"`
+			IsNew    bool   `json:"isNew"`
+		}
+		if err := json.Unmarshal(rec.Body.Bytes(), &got); err != nil {
+			t.Fatal(err)
+		}
+		if got.UserID != "user-123" || got.Username != "alice" || !got.IsNew {
+			t.Fatalf("unexpected response: %+v", got)
+		}
+	})
+
+	t.Run("store error returns 500 without leaking details", func(t *testing.T) {
+		store := stubUserStore{
+			fn: func(context.Context, string) (db.UpsertUserRow, error) {
+				return db.UpsertUserRow{}, errors.New("db connection refused")
+			},
+		}
+
+		rec := httptest.NewRecorder()
+		NewMux(store).ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/login", strings.NewReader(`{"username":"alice"}`)))
+
+		if rec.Code != http.StatusInternalServerError {
+			t.Fatalf("status = %d, want %d", rec.Code, http.StatusInternalServerError)
+		}
+		if strings.Contains(rec.Body.String(), "connection refused") {
+			t.Fatalf("response leaked internal error: %q", rec.Body.String())
+		}
+	})
+}
 
 func TestInvalidLogin(t *testing.T) {
 	mux := NewMux(nil)
@@ -75,7 +137,7 @@ func TestLoginIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	mux := NewMux(tx)
+	mux := NewMux(db.New(tx))
 	var firstID string
 	for _, wantNew := range []bool{true, false} {
 		rec := httptest.NewRecorder()
