@@ -2,13 +2,13 @@
 
 ## Overview
 
-`conman` (`github.com/anudeep22003/conman`) is a production Go backend server built with Go `1.27.2` and a standard-library-first philosophy.
+`multiplayer-ai` (`github.com/anudeep22003/multiplayer-ai`) is a production Go backend server built with Go `1.27.2` and a standard-library-first philosophy.
 
 As the codebase grows, organize new packages under `internal/` around clear responsibilities or domains rather than introducing premature layers or generic `util` packages.
 
 ## Commands
 
-Run all commands from the backend root (`/Users/anudeep/@anudeep/everything/conman/backend`) so `.env.local` and module paths resolve properly:
+Run all commands from the backend root (`/Users/anudeep/@anudeep/projects/multiplayer-ai/backend`) so `.env.local` and module paths resolve properly:
 
 ```sh
 # Start local PostgreSQL container
@@ -18,7 +18,7 @@ docker compose up -d --wait
 go run ./cmd/server
 
 # Build binary (gitignored under /bin/)
-go build -o bin/conman ./cmd/server
+go build -o bin/multiplayer-ai ./cmd/server
 
 # Static analysis
 go vet ./...

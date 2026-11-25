@@ -5,9 +5,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/anudeep22003/conman/internal/handlers"
-	"github.com/anudeep22003/conman/internal/handlers/auth"
-	"github.com/anudeep22003/conman/internal/handlers/health"
+	"github.com/anudeep22003/multiplayer-ai/internal/handlers"
+	"github.com/anudeep22003/multiplayer-ai/internal/handlers/auth"
+	"github.com/anudeep22003/multiplayer-ai/internal/handlers/health"
 )
 
 func TestAssemble(t *testing.T) {

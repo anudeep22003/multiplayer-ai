@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal"
 )
 
 func TestNewPool_InvalidDSN(t *testing.T) {

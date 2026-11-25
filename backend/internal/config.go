@@ -9,7 +9,7 @@ import (
 
 // Config holds application settings loaded from environment variables.
 type Config struct {
-	AppName     string `env:"APP_NAME" envDefault:"conman"`
+	AppName     string `env:"APP_NAME" envDefault:"multiplayer-ai"`
 	Environment string `env:"APP_ENV" envDefault:"development"`
 	LogLevel    string `env:"LOG_LEVEL" envDefault:"info"`
 

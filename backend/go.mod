@@ -1,4 +1,4 @@
-module github.com/anudeep22003/conman
+module github.com/anudeep22003/multiplayer-ai
 
 go 1.27.2
 

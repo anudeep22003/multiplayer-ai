@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "conman",
+      "name": "multiplayer-ai",
       "devDependencies": {
         "sst": "3.19.3",
       },

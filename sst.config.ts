@@ -3,7 +3,7 @@
 export default $config({
   app(input) {
     return {
-      name: "conman",
+      name: "multiplayer-ai",
       home: "aws",
       providers: {
         aws: {

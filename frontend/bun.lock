@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "conman-frontend",
+      "name": "multiplayer-ai-frontend",
       "dependencies": {
         "@tailwindcss/vite": "^4.3.5",
         "axios": "^1.21.1",

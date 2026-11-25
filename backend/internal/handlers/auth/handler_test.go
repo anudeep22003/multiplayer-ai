@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anudeep22003/conman/internal"
-	"github.com/anudeep22003/conman/internal/postgres"
+	"github.com/anudeep22003/multiplayer-ai/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal/postgres"
 )
 
 func TestInvalidLogin(t *testing.T) {

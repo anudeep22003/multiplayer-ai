@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 export type Theme = "light" | "dark" | "system";
 export type ResolvedTheme = "light" | "dark";
 
-const DEFAULT_STORAGE_KEY = "conman-theme";
+const DEFAULT_STORAGE_KEY = "multiplayer-ai-theme";
 const DARK_MEDIA_QUERY = "(prefers-color-scheme: dark)";
 
 export interface ThemeContextValue {

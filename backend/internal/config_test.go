@@ -15,7 +15,7 @@ func TestLoad(t *testing.T) {
 	})
 
 	t.Run("loads required DATABASE_URL and pool defaults", func(t *testing.T) {
-		wantDSN := "postgres://conman:conman@localhost:5432/conman?sslmode=disable"
+		wantDSN := "postgres://multiplayer_ai:multiplayer_ai@localhost:5432/multiplayer_ai?sslmode=disable"
 		t.Setenv("DATABASE_URL", wantDSN)
 
 		cfg, err := Load()

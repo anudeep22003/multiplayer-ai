@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const SESSION_KEY = "conman-session";
+const SESSION_KEY = "multiplayer-ai-session";
 
 export const SessionSchema = z.object({
   userId: z.string().trim().min(1),

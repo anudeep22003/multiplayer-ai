@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal"
 )
 
 const shutdownTimeout = 15 * time.Second

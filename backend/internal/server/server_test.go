@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal"
 )
 
 func TestNew(t *testing.T) {

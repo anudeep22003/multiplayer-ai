@@ -1,4 +1,4 @@
-# Conman Frontend
+# Multiplayer AI Frontend
 
 React + TypeScript + Vite frontend using Tailwind CSS v4, shadcn/ui, and Biome.
 

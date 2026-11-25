@@ -9,10 +9,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/anudeep22003/conman/internal"
-	"github.com/anudeep22003/conman/internal/app"
-	"github.com/anudeep22003/conman/internal/postgres"
-	"github.com/anudeep22003/conman/internal/server"
+	"github.com/anudeep22003/multiplayer-ai/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal/app"
+	"github.com/anudeep22003/multiplayer-ai/internal/postgres"
+	"github.com/anudeep22003/multiplayer-ai/internal/server"
 	"github.com/joho/godotenv"
 )
 

@@ -6,9 +6,9 @@ import (
 	"io/fs"
 	"log"
 
-	"github.com/anudeep22003/conman/internal"
-	"github.com/anudeep22003/conman/internal/app"
-	"github.com/anudeep22003/conman/internal/postgres"
+	"github.com/anudeep22003/multiplayer-ai/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal/app"
+	"github.com/anudeep22003/multiplayer-ai/internal/postgres"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 	"github.com/joho/godotenv"

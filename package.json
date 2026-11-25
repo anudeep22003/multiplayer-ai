@@ -1,5 +1,5 @@
 {
-  "name": "conman",
+  "name": "multiplayer-ai",
   "private": true,
   "devDependencies": {
     "sst": "3.19.3"

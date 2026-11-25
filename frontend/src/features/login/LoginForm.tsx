@@ -19,7 +19,7 @@ export function LoginForm({ loading, onLogin, onEdit }: LoginFormProps) {
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">
-        Log in to Conman
+        Log in to Multiplayer AI
       </h1>
 
       <form className="space-y-5" onSubmit={handleSubmit}>

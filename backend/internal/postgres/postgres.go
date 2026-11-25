@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/anudeep22003/conman/internal"
+	"github.com/anudeep22003/multiplayer-ai/internal"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
