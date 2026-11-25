@@ -1,6 +1,6 @@
 LOCAL_DB_URL ?= postgres://multiplayer_ai:multiplayer_ai@localhost:5432/multiplayer_ai?sslmode=disable
 
-.PHONY: help db-up db-down migrate-status migrate-up migrate-down dev test test-integration build
+.PHONY: help db-up db-down migrate-status migrate-up migrate-down sqlc dev test test-integration build
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-18s %s\n", $$1, $$2}'
@@ -19,6 +19,9 @@ migrate-up: ## Apply pending goose migrations
 
 migrate-down: ## Roll back the latest goose migration
 	go run ./cmd/migrate down
+
+sqlc: ## Regenerate Go database code from SQL queries
+	sqlc generate
 
 dev: ## Run backend HTTP server locally
 	go run ./cmd/server
