@@ -70,7 +70,8 @@ func TestLoginIntegration(t *testing.T) {
 	}
 	defer tx.Rollback(t.Context())
 
-	if _, err := tx.Exec(t.Context(), strings.Replace(string(migration), "CREATE TABLE", "CREATE TEMP TABLE", 1)); err != nil {
+	upSQL, _, _ := strings.Cut(string(migration), "-- +goose Down")
+	if _, err := tx.Exec(t.Context(), strings.Replace(upSQL, "CREATE TABLE", "CREATE TEMP TABLE", 1)); err != nil {
 		t.Fatal(err)
 	}
 
