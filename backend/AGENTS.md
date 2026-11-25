@@ -8,28 +8,7 @@ As the codebase grows, organize new packages under `internal/` around clear resp
 
 ## Commands
 
-Run all commands from the backend root (`/Users/anudeep/@anudeep/projects/multiplayer-ai/backend`) so `.env.local` and module paths resolve properly:
-
-```sh
-# Start local PostgreSQL container
-docker compose up -d --wait
-
-# Apply migrations / regenerate sqlc
-make migrate-up
-make sqlc
-
-# Run locally
-go run ./cmd/server
-
-# Build binary (gitignored under /bin/)
-go build -o bin/multiplayer-ai ./cmd/server
-
-# Static analysis
-go vet ./...
-
-# Run tests with race detector
-go test -race ./...
-```
+Run all commands from `backend/` so `.env.local` and module paths resolve properly; see `Makefile` for common targets.
 
 ## Engineering Guidelines
 
