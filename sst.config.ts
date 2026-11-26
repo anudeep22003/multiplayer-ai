@@ -35,14 +35,25 @@ export default $config({
         $app.stage === "prod"
           ? false
           : {
-            allowOrigins: ["http://localhost:5173"],
+            allowOrigins: ["*"],
             allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             allowHeaders: ["Content-Type", "Authorization", "X-Dev-User-Id"],
           },
     });
     httpApi.route("ANY /{proxy+}", apiHandler.arn);
 
-    return { apiUrl: httpApi.url };
+    const staticSite = new sst.aws.StaticSite("Web", {
+      path: "frontend",
+      build: {
+        command: "bun run build",
+        output: "dist"
+      },
+      environment: {
+        VITE_API_URL: httpApi.url,
+      },
+    })
+
+    return { apiUrl: httpApi.url, siteUrl: staticSite.url };
   },
 });
 
